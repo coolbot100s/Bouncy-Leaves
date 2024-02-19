@@ -1,0 +1,4 @@
+name: Bouncy Leaves
+version: '${project.version}'
+main: cool.bot.bouncyleaves.BouncyLeaves
+api-version: '1.20'
