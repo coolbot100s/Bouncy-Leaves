@@ -60,21 +60,33 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 //            }
 //        }
 
+        // ignore event if player was just flung in the last tick or so
+
         // populate list with leaves at fulltilt that the players feet are colliding with
-        player.sendMessage(String.valueOf(location.getY()));
-        for (Block curBlock : getBlocksInArea(new Location(location.getWorld(),playerBox.getMinX(),location.getY(),playerBox.getMinZ()),new Location(location.getWorld(),playerBox.getMaxX(),location.getY(),playerBox.getMaxZ()))) {
+        //player.sendMessage(String.valueOf(location.getY())); //DEBUG
+        List<Block> blocksUnderFeet = getBlocksInArea(new Location(location.getWorld(),Math.floor(playerBox.getMinX()),location.getY(),Math.floor(playerBox.getMinZ())),new Location(location.getWorld(),Math.floor(playerBox.getMaxX()),location.getY(),Math.floor(playerBox.getMaxZ())));
+
+
+        for (Block curBlock : blocksUnderFeet) {
             if (curBlock.getType() == Material.BIG_DRIPLEAF) {
-                BigDripleaf leaf = (BigDripleaf) block.getBlockData();
-                if (leaf.getTilt() == BigDripleaf.Tilt.FULL) {
-                    readyLeaves.add(curBlock);
+                BlockData curBlockData = curBlock.getBlockData();
+                if (curBlockData instanceof BigDripleaf) {
+                    BigDripleaf leaf = (BigDripleaf) curBlockData;
+                    if (leaf.getTilt() == BigDripleaf.Tilt.FULL) {
+                        readyLeaves.add(curBlock);
+                    }
                 }
             }
         }
+
+
 
         // if there are none ignore the event
         if (readyLeaves.isEmpty()) {
             return;
         }
+
+       // player.sendMessage(String.valueOf(readyLeaves.size())); //DEBUG
 
         // check to see if the player is standing in air, or a big leaf, if not ignore the event.
         if (!(block.getType() == Material.BIG_DRIPLEAF || block.getType() == Material.AIR)) {
