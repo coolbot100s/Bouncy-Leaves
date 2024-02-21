@@ -6,7 +6,6 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.BigDripleaf;
-import org.bukkit.block.data.type.Dripleaf;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,8 +18,6 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.bukkit.Bukkit.getPluginManager;
-
 
 public final class BouncyLeaves extends JavaPlugin implements Listener {
 
@@ -31,7 +28,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-
+        // Nothing to do here
     }
 
     @EventHandler
