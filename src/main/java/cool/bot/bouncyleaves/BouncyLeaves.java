@@ -2,6 +2,7 @@ package cool.bot.bouncyleaves;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -10,7 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
@@ -20,6 +24,10 @@ import java.util.List;
 
 
 public final class BouncyLeaves extends JavaPlugin implements Listener {
+
+
+    final NamespacedKey timerNSK = new NamespacedKey(this, "yeetTimer");
+    
 
     @Override
     public void onEnable() {
@@ -34,13 +42,16 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
+        PersistentDataContainer pdt = player.getPersistentDataContainer();
         Location location = player.getLocation();
         Block block = location.getBlock();
         BoundingBox playerBox = player.getBoundingBox();
         List<Block> readyLeaves = new ArrayList<>();
 
-        //TODO: ignore event if player was yeeted in the last few ticks
-
+        // Ignore event if player was yeeted in the last few ticks
+        if (pdt.getOrDefault(timerNSK, PersistentDataType.INTEGER, 0) > 0) {
+            return;
+        }
 
         // Get a list of blocks the player's feet are colliding with
         //TODO: mayhaps remove the flooring?
@@ -68,14 +79,23 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             return;
         }
 
-        // Yeet the player for each leaf
+        // Apply yeeting for each leaf, and reset each leaf.
+        Boolean yeeted = false;
+        
         for (Block leaf : readyLeaves) {
-            BigDripleaf leafData = (BigDripleaf) leaf.getBlockData();
-            yeet(player, leaf, leafData);
+           yeeted = yeet(player, leaf);
         }
+        
+        if (yeeted) {
+            attachTimerTag(player, 2);
+        }
+        
     }
 
-    private void yeet(Player player,Block block,BigDripleaf leafData) {
+    // Stuff that should be done per leaf, such as applying force vectors and reseting the leaf.
+    private boolean yeet(Player player,Block block) {
+        BigDripleaf leafData = (BigDripleaf) block.getBlockData();
+        
         getServer().getScheduler().runTaskLater(this, () -> {
             // big jump
             Vector vector = new Vector(0, 1.4, 0);
@@ -94,6 +114,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             player.playSound(player.getLocation(), Sound.ENTITY_SLIME_ATTACK, 2.0f, 1.0f);
 
         }, 1);
+        return true;
     }
 
     // Returns an array with a list of blocks in a designated area
@@ -113,6 +134,28 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         return blocks;
     }
 
+    public void attachTimerTag(Player player, int ticks) {
+        
+        // Set the timer tag in the player's persistent data container
+        player.getPersistentDataContainer().set(timerNSK, PersistentDataType.INTEGER, ticks);
+
+        // Start a BukkitRunnable to decrement the timer
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int ticksLeft = player.getPersistentDataContainer().getOrDefault(timerNSK, PersistentDataType.INTEGER, 0);
+                if (ticksLeft > 0) {
+                    // Decrement the timer
+                    ticksLeft--;
+                    player.getPersistentDataContainer().set(timerNSK, PersistentDataType.INTEGER, ticksLeft);
+                } else {
+                    // Remove the timer tag when it reaches 0
+                    player.getPersistentDataContainer().remove(timerNSK);
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(this, 1L, 1L);
+    }
 
 }
 
