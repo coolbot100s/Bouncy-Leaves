@@ -54,8 +54,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         }
 
         // Get a list of blocks the player's feet are colliding with
-        //TODO: mayhaps remove the flooring?
-        List<Block> blocksUnderFeet = getBlocksInArea(new Location(location.getWorld(),Math.floor(playerBox.getMinX()),location.getY(),Math.floor(playerBox.getMinZ())),new Location(location.getWorld(),Math.floor(playerBox.getMaxX()),location.getY(),Math.floor(playerBox.getMaxZ())));
+        List<Block> blocksUnderFeet = getBlocksInArea(new Location(location.getWorld(),playerBox.getMinX(),location.getY(),playerBox.getMinZ()),new Location(location.getWorld(),playerBox.getMaxX(),location.getY(),playerBox.getMaxZ()));
         // Check that list for any BIG_DRIPLEAF at full tilt
         for (Block curBlock : blocksUnderFeet) {
             if (curBlock.getType() == Material.BIG_DRIPLEAF) {
@@ -74,6 +73,8 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             return;
         }
 
+        //TODO: this should go right after timer
+        
         // check to see if the player is standing in air, or a big leaf, if not ignore the event.
         if (!(block.getType() == Material.BIG_DRIPLEAF || block.getType() == Material.AIR)) {
             return;
