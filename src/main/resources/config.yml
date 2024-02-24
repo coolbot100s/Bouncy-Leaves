@@ -1,0 +1,69 @@
+# Whether a sound should be played when a player is bounced
+# Bool
+# Default: true
+playSoundOnBounce: true
+# The minimum volume of the bounce sound
+# Float
+# Default: 1.6
+minimumVolume: 1.6
+# The maximum volume of the bounce sound
+# Float
+# Default: 1.8
+maximumVolume: 1.8
+# The minimum pitch of the bounce sound
+# Float
+# Default: 0.96
+minimumPitch: 0.96
+# The maximum pitch of the bounce sound
+# Float
+# Default: 1.04
+maximumPitch: 1.04
+# Logical collisions prevents players from being yeeted while standing on certain blocks like slabs
+# Bool
+# Default: true
+logicalCollisions: true
+# The tilt level at which players can be yeeted
+# Int
+# Values: 0 = no tilt (may cause issues, use 1), 1 = unstable (no visual tilt), 2 = partial tilt, 3 = full tilt
+# Default: 3
+tiltLevel: 3
+# Player bounce cooldown duration in ticks, 0 to disable
+# Int
+# Default: 2
+bounceCooldown: 2
+# Delay in ticks before player is bounced
+# Int
+# Default: 1
+bounceDelay: 1
+# The minimum vertical jump power
+# Float
+# Default: 1.2
+minimumVerticalJumpPower: 1.2
+# The maximum vertical jump power
+# Float
+# Default: 1.2
+maximumVerticalJumpPower: 1.2
+# The minimum horizontal jump power
+# Float
+# Default: 0.6
+minimumHorizontalJumpPower: 0.6
+# The maximum horizontal jump power
+# Float
+# Default: 0.6
+maximumHorizontalJumpPower: 0.6
+# When enabled, players are flung "behind" the drip leaf
+# Bool
+# Default: true
+horizontalFlingBack: true
+# The bonus applied to the vertical power of additional leaves when a player is standing on multiple leaves at once, a value below 0 creates an effect of diminishing returns
+# Float
+# Default: 0.8
+verticalStackMultiplier: 0.8
+# The bonus applied to the horizontal power of additional leaves of the same direction when a player is standing on multiple leaves at once, a negative value creates an effect of diminishing returns
+# Float
+# Default: 0.8
+horizontalStackMultiplier: 0.8
+# Whether bouncing should be disabled when sneaking
+# Bool
+# Default: true
+disableBounceWhenSneaking: true

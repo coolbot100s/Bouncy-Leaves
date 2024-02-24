@@ -1,5 +1,6 @@
 package cool.bot.bouncyleaves;
 
+// Imports
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -8,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.BigDripleaf;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,10 +21,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-import java.util.*;
-
-
+// Main Class
 public final class BouncyLeaves extends JavaPlugin implements Listener {
 
     // Vars
@@ -30,34 +33,31 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
     Random random = new Random();
 
     // Settings
-    public boolean playSound = true;
-    public float volumeMin = 1.6f;
-    public float volumeMax = 1.8f;
-    public float pitchMin = 0.96f;
-    public float pitchMax = 1.04f;
-    public boolean logicalCollisions = true;
-    public int tiltLevel = 2;
-    public int coolDown = 2;
-    public int yeetDelay = 1;
-    public float jumpPowerVerticalMin = 1.2f;
-    public float jumpPowerVerticalMax = 1.2f;
-    public float jumpPowerHorizontalMin = 0.8f;
-    public float jumpPowerHorizontalMax = 0.8f;
-    public boolean horizontalFlingBack = true;
-    public float verticalStackMultiplier = 0.8f;
-    public float horizontalStackMultiplier = 0.8f;
-    public boolean noYeetWhenSneaking = true;
+    FileConfiguration config = this.getConfig();
 
-    
+    public boolean playSound = config.getBoolean("playSoundOnBounce");
+    public float volumeMin = (float) config.getDouble("minimumVolume");
+    public float volumeMax = (float) config.getDouble("maximumVolume");
+    public float pitchMin = (float) config.getDouble("minimumPitch");
+    public float pitchMax = (float) config.getDouble("maximumPitch");
+    public boolean logicalCollisions = config.getBoolean("logicalCollisions");
+    public int tiltLevel = config.getInt("tiltLevel");
+    public int coolDown = config.getInt("bounceCooldown");
+    public int yeetDelay = config.getInt("bounceDelay");
+    public float jumpPowerVerticalMin = (float) config.getDouble("minimumVerticalJumpPower");
+    public float jumpPowerVerticalMax = (float) config.getDouble("maximumVerticalJumpPower");
+    public float jumpPowerHorizontalMin = (float) config.getDouble("minimumHorizontalJumpPower");
+    public float jumpPowerHorizontalMax = (float) config.getDouble("maximumHorizontalJumpPower");
+    public boolean horizontalFlingBack = config.getBoolean("horizontalFlingBack");
+    public float verticalStackMultiplier = (float) config.getDouble("verticalStackMultiplier");
+    public float horizontalStackMultiplier = (float) config.getDouble("horizontalStackMultiplier");
+    public boolean noYeetWhenSneaking = config.getBoolean("disableBounceWhenSneaking");
+
 
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this,this);
-    }
-
-    @Override
-    public void onDisable() {
-        // Nothing to do here
+        this.saveDefaultConfig();
     }
 
     @EventHandler
@@ -72,7 +72,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         // Ignore event if player was yeeted in the last few ticks
         if (coolDown > 0) {
             if (pdt.getOrDefault(timerNSK, PersistentDataType.INTEGER, 0) > 0) {
-                player.sendMessage("not ready"); //DEBUG
                 return;
             }
         }
@@ -112,7 +111,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             return;
         }
 
-        Vector yeetForce = makeYeetForce(readyLeaves);
+        Vector yeetForce = makeYeetForce(readyLeaves, player);
 
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -138,17 +137,17 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         
     }
 
-    private Vector makeYeetForce(List<Block> readyLeaves) {
+    private Vector makeYeetForce(List<Block> readyLeaves, Player player) {
         // Create the force vector for the yeeting
         Vector yeetForce = new Vector(0, 0, 0);
         double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax);
         double horizontalComponent = randfRange(jumpPowerHorizontalMin, jumpPowerHorizontalMax);
 
         // multiplier per cardinal
-        float nCount = 1;
-        float sCount = 1;
-        float eCount = 1;
-        float wCount = 1;
+        float nCount = 0;
+        float sCount = 0;
+        float eCount = 0;
+        float wCount = 0;
 
         int i = 0;
 
@@ -160,24 +159,30 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
                 Vector horVec = facing.getDirection();
                 horVec.add(facing.getDirection().multiply(horizontalComponent));
 
-                if (horizontalStackMultiplier != 1 && i >= 1) {
-                    if (facing == BlockFace.NORTH) {
-                        horVec.multiply(Math.pow(horizontalComponent, nCount));
-                        nCount++;
-                    }
-                    if (facing == BlockFace.SOUTH) {
-                        horVec.multiply(Math.pow(horizontalComponent, sCount));
-                        sCount++;
-                    }
-                    if (facing == BlockFace.EAST) {
-                        horVec.multiply(Math.pow(horizontalComponent, eCount));
-                        eCount++;
-                    }
-                    if (facing == BlockFace.WEST ) {
-                        horVec.multiply(Math.pow(horizontalComponent, wCount));
-                        wCount++;
+
+                if (horizontalStackMultiplier != 1) {
+                    switch (facing) {
+                        case NORTH:
+                            horVec.multiply(Math.pow(horizontalComponent, nCount));
+                            nCount++;
+                            break;
+                        case SOUTH:
+                            horVec.multiply(Math.pow(horizontalComponent, sCount));
+                            sCount++;
+                            break;
+                        case EAST:
+                            horVec.multiply(Math.pow(horizontalComponent, eCount));
+                            eCount++;
+                            break;
+                        case WEST:
+                            horVec.multiply(Math.pow(horizontalComponent, wCount));
+                            wCount++;
+                            break;
+                        default:
+                            break;
                     }
                 }
+
                 if (horizontalFlingBack) {
                     horVec.multiply(-1);
                 }
@@ -190,7 +195,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             yeetForce.add(vertVec);
             i++;
         }
-
         return yeetForce;
     }
 
@@ -241,6 +245,8 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         float v = random.nextFloat();
         return min + v * (max-min);
     }
+
+
 
 }
 
