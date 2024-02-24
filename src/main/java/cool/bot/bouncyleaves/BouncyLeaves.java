@@ -1,6 +1,5 @@
 package cool.bot.bouncyleaves;
 
-import com.sun.crypto.provider.HmacMD5KeyGenerator;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -26,7 +25,7 @@ import java.util.*;
 
 public final class BouncyLeaves extends JavaPlugin implements Listener {
 
-
+    // Vars
     final NamespacedKey timerNSK = new NamespacedKey(this, "yeetTimer");
     Random random = new Random();
 
@@ -115,53 +114,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
         Vector yeetForce = makeYeetForce(readyLeaves);
 
-
-        // Apply yeeting for each leaf, and reset each leaf.
-//        Boolean yeeted = false;
-        
-//        for (Block leaf : readyLeaves) {
-//           yeeted = yeet(player, leaf);
-//        }
-
-
-        // Create the force vector for the yeeting
-//        Vector yeetForce = new Vector(0, 0, 0); // Initialize the force vector with zero components
-//        double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax); // Determine the random vertical component within the specified range
-//        double horizontalComponent = randfRange(jumpPowerHorizontalMin, jumpPowerHorizontalMax); // Determine the random horizontal component within the specified range
-//
-//        // Iterate through the list of ready leaves
-//        for (int i = 0; i < readyLeaves.size(); i++) {
-//            Block leaf = readyLeaves.get(i); // Get the current leaf block
-//            BigDripleaf leafData = (BigDripleaf) leaf.getBlockData(); // Get the block data of the leaf
-//            Vector leafVector = new Vector(); // Initialize a vector to represent the force applied to the current leaf
-//
-//            // Determine and add the horizontal force component to the leaf vector if horizontal jump power is enabled
-//            if (jumpPowerHorizontalMax != 0.0f) {
-//                leafVector.add(leafData.getFacing().getDirection().multiply(horizontalComponent)); // Calculate and add the horizontal component based on the leaf's facing direction
-//                if (horizontalFlingBack) {
-//                    leafVector.multiply(-1); // If fling back is enabled, reverse the direction of the horizontal force
-//                }
-//            }
-//
-//            // Apply horizontal stacking multiplier to the leaf vector if the leaf index is greater than or equal to 1 and the multiplier is not 1
-//            if (i >= 1 && horizontalStackMultiplier != 1f) {
-//                leafVector.multiply(Math.pow(horizontalStackMultiplier, i)); // Multiply the leaf vector by the horizontal stacking multiplier raised to the power of the leaf index
-//            }
-//
-//            // Add the vertical force component to the leaf vector
-//            leafVector.add(new Vector(0, verticalComponent, 0)); // Add the determined vertical component to the leaf vector
-//
-//            // Apply vertical stacking multiplier to the leaf vector if the leaf index is greater than or equal to 1 and the multiplier is not 1
-//            if (i >= 1 && verticalStackMultiplier != 1f) {
-//                leafVector.setY(leafVector.getY() + Math.pow(verticalStackMultiplier, i)); // Add the vertical stacking multiplier raised to the power of the leaf index to the Y component of the leaf vector
-//            }
-//
-//            // Add the calculated force vector for the current leaf to the overall yeet force vector
-//            yeetForce.add(leafVector); // Add the calculated force vector for the current leaf to the overall yeet force
-//        }
-
-
-
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
            player.setVelocity(player.getVelocity().add(yeetForce));
@@ -180,15 +132,17 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             }
 
         }, yeetDelay);
+
+        // add cooldown timer to the player that got yeeted
         attachTimerTag(player,timerNSK, coolDown);
         
     }
 
     private Vector makeYeetForce(List<Block> readyLeaves) {
         // Create the force vector for the yeeting
-        Vector yeetForce = new Vector(0, 0, 0); // Initialize the force vector with zero components
-        double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax); // Determine the random vertical component within the specified range
-        double horizontalComponent = randfRange(jumpPowerHorizontalMin, jumpPowerHorizontalMax); // Determine the random horizontal component within the specified range
+        Vector yeetForce = new Vector(0, 0, 0);
+        double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax);
+        double horizontalComponent = randfRange(jumpPowerHorizontalMin, jumpPowerHorizontalMax);
 
         // multiplier per cardinal
         float nCount = 1;
@@ -236,71 +190,11 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             yeetForce.add(vertVec);
             i++;
         }
-        // Return the resulting yeetForce vector containing the combined forces from all leaves
+
         return yeetForce;
     }
 
-    // Stuff that should be done per leaf, such as applying force vectors and reseting the leaf.
-    private boolean yeet(Player player,Block block) {
-        BigDripleaf leafData = (BigDripleaf) block.getBlockData();
-        PersistentDataContainer pdt = player.getPersistentDataContainer();
-
-        //set tag here for occupied leaves
-
-
-        player.sendMessage("yeet"); //DEBUG
-
-        getServer().getScheduler().runTaskLater(this, () -> {
-
-            Vector vector = new Vector();
-
-            // directional
-            if (jumpPowerHorizontalMax != 0.0f) {
-                vector.add(leafData.getFacing().getDirection().multiply(randfRange(jumpPowerHorizontalMin, jumpPowerHorizontalMax)));
-                if (horizontalFlingBack) {
-                    vector.multiply(-1);
-                }
-            }
-
-
-            // big jump
-            vector.add(new Vector(0, randfRange(jumpPowerVerticalMin,jumpPowerVerticalMax), 0));
-
-
-
-            player.sendMessage(String.valueOf(vector)); //DEBUG
-
-            player.setVelocity(player.getVelocity().add(vector));
-
-            // reset leaf
-            leafData.setTilt(BigDripleaf.Tilt.NONE);
-            block.setBlockData(leafData);
-
-            // sound
-            if (playSound) {
-                player.playSound(player.getLocation(), Sound.ENTITY_SLIME_ATTACK, randfRange(volumeMin, volumeMax), randfRange(pitchMin, pitchMax));
-            }
-
-        }, 1);
-        return true;
-    }
-
-    // Returns an array with a list of blocks in a designated area
-    public List<Block> getBlocksInArea(Location minLocation, Location maxLocation) {
-        List<Block> blocks = new ArrayList<>();
-
-        for (int x = minLocation.getBlockX(); x <= maxLocation.getBlockX(); x++) {
-            for (int y = minLocation.getBlockY(); y <= maxLocation.getBlockY(); y++) {
-                for (int z = minLocation.getBlockZ(); z <= maxLocation.getBlockZ(); z++) {
-                    Location currentLocation = new Location(minLocation.getWorld(), x, y, z);
-                    Block currentBlock = currentLocation.getBlock();
-                    blocks.add(currentBlock);
-                }
-            }
-        }
-        return blocks;
-    }
-
+    // Attatch a timer to the player
     public void attachTimerTag(Player player, NamespacedKey nsk, int ticks) {
 
         PersistentDataContainer pdc = player.getPersistentDataContainer();
@@ -325,6 +219,24 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         }.runTaskTimer(this, 1L, 1L);
     }
 
+    // Utilities
+    // Returns an array with a list of blocks in a designated area
+    public List<Block> getBlocksInArea(Location minLocation, Location maxLocation) {
+        List<Block> blocks = new ArrayList<>();
+
+        for (int x = minLocation.getBlockX(); x <= maxLocation.getBlockX(); x++) {
+            for (int y = minLocation.getBlockY(); y <= maxLocation.getBlockY(); y++) {
+                for (int z = minLocation.getBlockZ(); z <= maxLocation.getBlockZ(); z++) {
+                    Location currentLocation = new Location(minLocation.getWorld(), x, y, z);
+                    Block currentBlock = currentLocation.getBlock();
+                    blocks.add(currentBlock);
+                }
+            }
+        }
+        return blocks;
+    }
+
+    // Return a random float from a range
     public float randfRange(float min, float max) {
         float v = random.nextFloat();
         return min + v * (max-min);
