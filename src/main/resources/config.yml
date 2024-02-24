@@ -55,6 +55,10 @@ maximumHorizontalJumpPower: 0.6
 # Bool
 # Default: true
 horizontalFlingBack: true
+# Whether standing on multiple leaves should increase the height and length of the bounce
+# Bool
+# Default: true
+allowMultiBounce: true
 # The bonus applied to the vertical power of additional leaves when a player is standing on multiple leaves at once, a value below 0 creates an effect of diminishing returns
 # Float
 # Default: 0.8
@@ -67,4 +71,3 @@ horizontalStackMultiplier: 0.8
 # Bool
 # Default: true
 disableBounceWhenSneaking: true
-# Whether standing on multiple leaves should should

@@ -77,12 +77,12 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             }
         }
 
-        // Ignore event if player is sneaking (if enabled)
+        // Ignore event if player is sneaking
         if (noYeetWhenSneaking && player.isSneaking()) {
             return;
         }
 
-        // check to see if the player is standing in air, or a big leaf, if not ignore the event.
+        // check to see if the player is standing in air, or a big leaf, if not ignore the event
         if (logicalCollisions) {
             if (!(block.getType() == Material.BIG_DRIPLEAF || block.getType() == Material.AIR)) {
                 return;
@@ -111,7 +111,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         }
 
         Vector yeetForce = makeYeetForce(readyLeaves, player);
-        player.sendMessage("total yeetforce: " + yeetForce); // DEBUG
 
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -138,8 +137,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
     // Create the force vector for the yeeting
     private Vector makeYeetForce(List<Block> readyLeaves, Player player) {
-        player.sendMessage("yeet time!"); //DEBUG
-
         Vector yeetForce = new Vector(0, 0, 0);
         // Determine RNG
         double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax);
@@ -150,38 +147,35 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         float sCount = 0;
         float eCount = 0;
         float wCount = 0;
-
         int i = 0;
-
-        player.sendMessage("hcomp: " + horizontalComponent); //DEBUG
 
         // per block vectors
         for (Block leaf : readyLeaves) {
             BigDripleaf leafData = (BigDripleaf) leaf.getBlockData();
 
+            // Horizontal movement
             if (horizontalComponent != 0.0f) {
+                double hpow = horizontalComponent;
                 BlockFace facing = leafData.getFacing();
                 Vector horVec = facing.getDirection();
-                horVec.multiply(horizontalComponent);
-                player.sendMessage("after direction: " + horVec); // DEBUG
 
                 // Horizontal stacking
                 if (horizontalStackMultiplier != 1) {
                     switch (facing) {
                         case NORTH:
-                            horVec.multiply(Math.pow(horizontalComponent, nCount));
+                            hpow = hpow * Math.pow(horizontalComponent, nCount);
                             nCount++;
                             break;
                         case SOUTH:
-                            horVec.multiply(Math.pow(horizontalComponent, sCount));
+                            hpow = hpow * Math.pow(horizontalComponent, sCount);
                             sCount++;
                             break;
                         case EAST:
-                            horVec.multiply(Math.pow(horizontalComponent, eCount));
+                            hpow = hpow * Math.pow(horizontalComponent, eCount);
                             eCount++;
                             break;
                         case WEST:
-                            horVec.multiply(Math.pow(horizontalComponent, wCount));
+                            hpow = hpow * Math.pow(horizontalComponent, wCount);
                             wCount++;
                             break;
                         default:
@@ -189,13 +183,11 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
                     }
                 }
 
-                player.sendMessage("after modifier: " + horVec); //DEBUG
+                horVec.multiply(hpow);
                 if (horizontalFlingBack) {
                     horVec.multiply(-1);
-                    player.sendMessage("after flip: " + horVec); //DEBUG
                 }
                 yeetForce.add(horVec);
-                player.sendMessage("loop yeet: " + yeetForce); //DEBUG
             }
 
             // Vertical
@@ -204,43 +196,28 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             if (verticalStackMultiplier != 1 && i >= 1) {
                 ypow = ypow * Math.pow(verticalStackMultiplier, i);
             }
-            player.sendMessage("vertical power: " + verticalComponent); //DEBUG
-            player.sendMessage("vert vec: " + ypow); //DEBUG
-
-
 
             // End of Loop
             yeetForce.add(new Vector(0,ypow,0));
             i++;
         }
 
+        if (!(allowMultiBounce)) {
+            // Cap vertical power
+            if (yeetForce.getY() > verticalComponent) {
+                yeetForce.setY(verticalComponent);
+            }
+
+            // Cap horizontal power
+            if (Math.abs(yeetForce.getX()) > horizontalComponent) {
+                yeetForce.setX(Math.signum(yeetForce.getX()) * horizontalComponent);
+            }
+            if (Math.abs(yeetForce.getZ()) > horizontalComponent) {
+                yeetForce.setZ(Math.signum(yeetForce.getZ()) * horizontalComponent);
+            }
+        }
 
         return yeetForce;
-    }
-
-    // Attach a timer to the player
-    public void attachTimerTag(Player player, NamespacedKey nsk, int ticks) {
-
-        PersistentDataContainer pdc = player.getPersistentDataContainer();
-
-        pdc.set(nsk, PersistentDataType.INTEGER, ticks);
-
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                int ticksLeft = pdc.getOrDefault(nsk, PersistentDataType.INTEGER, 0);
-                if (ticksLeft > 0) {
-                    // Decrement the timer
-                    ticksLeft--;
-                    pdc.set(nsk, PersistentDataType.INTEGER, ticksLeft);
-                } else {
-                    // Remove the timer tag when it reaches 0
-                    pdc.remove(nsk);
-                    this.cancel();
-                }
-            }
-        }.runTaskTimer(this, 1L, 1L);
     }
 
     // Utilities
@@ -260,13 +237,31 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         return blocks;
     }
 
+    // Attach a timer to the player
+    public void attachTimerTag(Player player, NamespacedKey nsk, int ticks) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        pdc.set(nsk, PersistentDataType.INTEGER, ticks);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int ticksLeft = pdc.getOrDefault(nsk, PersistentDataType.INTEGER, 0);
+                if (ticksLeft > 0) {
+                    // Decrement the timer
+                    ticksLeft--;
+                    pdc.set(nsk, PersistentDataType.INTEGER, ticksLeft);
+                } else {
+                    // Remove the timer tag when it reaches 0
+                    pdc.remove(nsk);
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(this, 1L, 1L);
+    }
+
     // Return a random float from a range
     public float randfRange(float min, float max) {
         float v = random.nextFloat();
         return min + v * (max-min);
     }
-
-
-
 }
-
