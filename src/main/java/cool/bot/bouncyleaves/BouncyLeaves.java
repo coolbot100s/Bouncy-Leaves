@@ -52,6 +52,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
     public float verticalStackMultiplier = (float) config.getDouble("verticalStackMultiplier");
     public float horizontalStackMultiplier = (float) config.getDouble("horizontalStackMultiplier");
     public boolean noYeetWhenSneaking = config.getBoolean("disableBounceWhenSneaking");
+    public boolean allowMultiBounce = config.getBoolean("allowMultiBounce");
 
 
     @Override
@@ -77,10 +78,8 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         }
 
         // Ignore event if player is sneaking (if enabled)
-        if (noYeetWhenSneaking) {
-            if (player.isSneaking()) {
-                return;
-            }
+        if (noYeetWhenSneaking && player.isSneaking()) {
+            return;
         }
 
         // check to see if the player is standing in air, or a big leaf, if not ignore the event.
@@ -112,7 +111,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         }
 
         Vector yeetForce = makeYeetForce(readyLeaves, player);
-        player.sendMessage("total yeetforce: " + yeetForce);
+        player.sendMessage("total yeetforce: " + yeetForce); // DEBUG
 
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -135,7 +134,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
         // add cooldown timer to the player that got yeeted
         attachTimerTag(player,timerNSK, coolDown);
-        
     }
 
     // Create the force vector for the yeeting

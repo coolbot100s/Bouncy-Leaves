@@ -59,7 +59,7 @@ horizontalFlingBack: true
 # Float
 # Default: 0.8
 verticalStackMultiplier: 0.8
-# The bonus applied to the horizontal power of additional leaves of the same direction when a player is standing on multiple leaves at once, a negative value creates an effect of diminishing returns
+# The bonus applied to the horizontal power of additional leaves of the same direction when a player is standing on multiple leaves at once, a value below 0 creates an effect of diminishing returns
 # Float
 # Default: 0.8
 horizontalStackMultiplier: 0.8
@@ -67,3 +67,4 @@ horizontalStackMultiplier: 0.8
 # Bool
 # Default: true
 disableBounceWhenSneaking: true
+# Whether standing on multiple leaves should should
