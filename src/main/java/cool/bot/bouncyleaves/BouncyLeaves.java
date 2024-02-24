@@ -70,6 +70,18 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         BoundingBox playerBox = player.getBoundingBox();
         List<Block> readyLeaves = new ArrayList<>();
 
+        // check if the player is standing in air, or a big leaf, if not ignore the event
+        if (logicalCollisions) {
+            if (!(block.getType() == Material.BIG_DRIPLEAF || block.getType() == Material.AIR)) {
+                return;
+            }
+        }
+
+        // check if the player has permission to bounce, if not ignore the event
+        if (!(player.hasPermission("canBounce"))) {
+            return;
+        }
+
         // Ignore event if player was yeeted in the last few ticks
         if (coolDown > 0) {
             if (pdt.getOrDefault(timerNSK, PersistentDataType.INTEGER, 0) > 0) {
@@ -81,14 +93,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         if (noYeetWhenSneaking && player.isSneaking()) {
             return;
         }
-
-        // check to see if the player is standing in air, or a big leaf, if not ignore the event
-        if (logicalCollisions) {
-            if (!(block.getType() == Material.BIG_DRIPLEAF || block.getType() == Material.AIR)) {
-                return;
-            }
-        }
-
 
         // Get a list of blocks the player's feet are colliding with
         List<Block> blocksUnderFeet = getBlocksInArea(new Location(location.getWorld(),playerBox.getMinX(),location.getY(),playerBox.getMinZ()),new Location(location.getWorld(),playerBox.getMaxX(),location.getY(),playerBox.getMaxZ()));
@@ -105,16 +109,14 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             }
         }
 
-        // if there are none ignore the event
+        // if there are no big drip leaf at the appropriate tilt detected, ignore the event
         if (readyLeaves.isEmpty()) {
             return;
         }
 
-        Vector yeetForce = makeYeetForce(readyLeaves, player);
-
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
-           player.setVelocity(player.getVelocity().add(yeetForce));
+           player.setVelocity(player.getVelocity().add(makeYeetForce(readyLeaves, player)));
 
             // Reset the leafs and do other per leaf logic at time of yeeting
             for (Block leaf : readyLeaves) {
