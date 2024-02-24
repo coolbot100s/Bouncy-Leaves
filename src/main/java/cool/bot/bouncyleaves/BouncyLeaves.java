@@ -112,6 +112,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         }
 
         Vector yeetForce = makeYeetForce(readyLeaves, player);
+        player.sendMessage("total yeetforce: " + yeetForce);
 
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -137,9 +138,12 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         
     }
 
+    // Create the force vector for the yeeting
     private Vector makeYeetForce(List<Block> readyLeaves, Player player) {
-        // Create the force vector for the yeeting
+        player.sendMessage("yeet time!"); //DEBUG
+
         Vector yeetForce = new Vector(0, 0, 0);
+        // Determine RNG
         double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax);
         double horizontalComponent = randfRange(jumpPowerHorizontalMin, jumpPowerHorizontalMax);
 
@@ -151,15 +155,19 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
         int i = 0;
 
+        player.sendMessage("hcomp: " + horizontalComponent); //DEBUG
+
+        // per block vectors
         for (Block leaf : readyLeaves) {
             BigDripleaf leafData = (BigDripleaf) leaf.getBlockData();
 
             if (horizontalComponent != 0.0f) {
                 BlockFace facing = leafData.getFacing();
                 Vector horVec = facing.getDirection();
-                horVec.add(facing.getDirection().multiply(horizontalComponent));
+                horVec.multiply(horizontalComponent);
+                player.sendMessage("after direction: " + horVec); // DEBUG
 
-
+                // Horizontal stacking
                 if (horizontalStackMultiplier != 1) {
                     switch (facing) {
                         case NORTH:
@@ -183,22 +191,36 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
                     }
                 }
 
+                player.sendMessage("after modifier: " + horVec); //DEBUG
                 if (horizontalFlingBack) {
                     horVec.multiply(-1);
+                    player.sendMessage("after flip: " + horVec); //DEBUG
                 }
                 yeetForce.add(horVec);
+                player.sendMessage("loop yeet: " + yeetForce); //DEBUG
             }
-            Vector vertVec = new Vector(0,verticalComponent,0);
+
+            // Vertical
+            Double ypow = verticalComponent;
+            // Vertical Multiplier
             if (verticalStackMultiplier != 1 && i >= 1) {
-                vertVec.multiply(Math.pow(verticalComponent, i));
+                ypow = ypow * Math.pow(verticalStackMultiplier, i);
             }
-            yeetForce.add(vertVec);
+            player.sendMessage("vertical power: " + verticalComponent); //DEBUG
+            player.sendMessage("vert vec: " + ypow); //DEBUG
+
+
+
+            // End of Loop
+            yeetForce.add(new Vector(0,ypow,0));
             i++;
         }
+
+
         return yeetForce;
     }
 
-    // Attatch a timer to the player
+    // Attach a timer to the player
     public void attachTimerTag(Player player, NamespacedKey nsk, int ticks) {
 
         PersistentDataContainer pdc = player.getPersistentDataContainer();
