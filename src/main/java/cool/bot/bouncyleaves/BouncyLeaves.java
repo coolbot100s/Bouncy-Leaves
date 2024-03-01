@@ -77,8 +77,8 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             }
         }
 
-        // check if the player has permission to bounce, if not ignore the event
-        if (!(player.hasPermission("canBounce"))) {
+        // Ignore event if player is sneaking
+        if (noYeetWhenSneaking && player.isSneaking()) {
             return;
         }
 
@@ -87,11 +87,6 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             if (pdt.getOrDefault(timerNSK, PersistentDataType.INTEGER, 0) > 0) {
                 return;
             }
-        }
-
-        // Ignore event if player is sneaking
-        if (noYeetWhenSneaking && player.isSneaking()) {
-            return;
         }
 
         // Get a list of blocks the player's feet are colliding with
@@ -111,6 +106,11 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
         // if there are no big drip leaf at the appropriate tilt detected, ignore the event
         if (readyLeaves.isEmpty()) {
+            return;
+        }
+
+        // check if the player has permission to bounce, if not ignore the event
+        if (!(player.hasPermission("canBounce"))) {
             return;
         }
 
