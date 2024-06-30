@@ -71,3 +71,7 @@ horizontalStackMultiplier: 0.8
 # Bool
 # Default: true
 disableBounceWhenSneaking: true
+# Whether the player should take fall damage from bouncing
+# Bool
+# Default: true
+preventFallDamage: true

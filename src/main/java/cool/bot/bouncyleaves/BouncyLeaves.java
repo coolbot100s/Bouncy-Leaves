@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -30,6 +31,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
     // Vars
     final NamespacedKey timerNSK = new NamespacedKey(this, "yeetTimer");
+    final NamespacedKey bouncedNSK = new NamespacedKey(this, "bounced");
     Random random = new Random();
 
     // Settings
@@ -53,6 +55,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
     public float horizontalStackMultiplier = (float) config.getDouble("horizontalStackMultiplier");
     public boolean noYeetWhenSneaking = config.getBoolean("disableBounceWhenSneaking");
     public boolean allowMultiBounce = config.getBoolean("allowMultiBounce");
+    public boolean noFallDamage = config.getBoolean("preventFallDamage");
 
 
     @Override
@@ -69,6 +72,25 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
         Block block = location.getBlock();
         BoundingBox playerBox = player.getBoundingBox();
         List<Block> readyLeaves = new ArrayList<>();
+
+
+        // Fall damage prevention logic
+        if (noFallDamage) {
+            if (player.getPersistentDataContainer().getOrDefault(bouncedNSK, PersistentDataType.BOOLEAN, false)) {
+                // If player is on top of a solid block
+                Location under = location.clone();
+                under.setY(location.getBlockY() - 0.01);
+                if (under.getBlock().getType().isSolid()) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            setBoolTag(player, bouncedNSK, false);
+                        }
+                    }.runTaskLater(this, 1);
+                    return;
+                }
+            }
+        }
 
         // check if the player is standing in air, or a big leaf, if not ignore the event
         if (logicalCollisions) {
@@ -116,7 +138,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
         // Schedule the player to be yeeted
         getServer().getScheduler().runTaskLater(this, () -> {
-           player.setVelocity(player.getVelocity().add(makeYeetForce(readyLeaves, player)));
+           player.setVelocity(player.getVelocity().add(makeYeetForce(readyLeaves)));
 
             // Reset the leafs and do other per leaf logic at time of yeeting
             for (Block leaf : readyLeaves) {
@@ -135,10 +157,28 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
 
         // add cooldown timer to the player that got yeeted
         attachTimerTag(player,timerNSK, coolDown);
+        // add bounced tag
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                setBoolTag(player, bouncedNSK, true);
+            }
+        }.runTaskLater(this, yeetDelay + 1);
+
+    }
+
+    @EventHandler
+    public void onPlayerDamage(EntityDamageEvent event) {
+        // Fall damage prevention
+        if (noFallDamage) {
+            if (event.getEntity() instanceof Player && event.getCause() == EntityDamageEvent.DamageCause.FALL && event.getEntity().getPersistentDataContainer().getOrDefault(bouncedNSK, PersistentDataType.BOOLEAN, false)) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     // Create the force vector for the yeeting
-    private Vector makeYeetForce(List<Block> readyLeaves, Player player) {
+    private Vector makeYeetForce(List<Block> readyLeaves) {
         Vector yeetForce = new Vector(0, 0, 0);
         // Determine RNG
         double verticalComponent = randfRange(jumpPowerVerticalMin, jumpPowerVerticalMax);
@@ -193,7 +233,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
             }
 
             // Vertical
-            Double ypow = verticalComponent;
+            double ypow = verticalComponent;
             // Vertical Multiplier
             if (verticalStackMultiplier != 1 && i >= 1) {
                 ypow = ypow * Math.pow(verticalStackMultiplier, i);
@@ -259,6 +299,13 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
                 }
             }
         }.runTaskTimer(this, 1L, 1L);
+    }
+
+    // Attach bounced tag to the player
+    public void setBoolTag(Player player, NamespacedKey nsk, boolean bounced) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        pdc.set(nsk, PersistentDataType.BOOLEAN, bounced);
+
     }
 
     // Return a random float from a range
