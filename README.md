@@ -20,3 +20,5 @@ The config has many options making this plugin extremely customizable, the defau
 There is also a single **permission** `bouncyLeaves.canBounce`, enabled by default that determines if a player can be launched by drip leaves or not.  
 Adding and revoking this permission allows admins to use this feature in certain areas, or at certain times such as minigame and parkour zones without affecting survival gameplay.
   
+--- 
+For support, suggestions, and questions join my team's [Discord Server](https://discord.gg/qxRVkGDjdJ).
