@@ -67,6 +67,12 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
+
+        // If the player doesn't have the bounce permission, ignore them
+        if (!player.hasPermission("bouncyLeaves.canBounce")) {
+            return;
+        }
+
         PersistentDataContainer pdt = player.getPersistentDataContainer();
         Location location = player.getLocation();
         Block block = location.getBlock();
@@ -171,7 +177,7 @@ public final class BouncyLeaves extends JavaPlugin implements Listener {
     public void onPlayerDamage(EntityDamageEvent event) {
         // Fall damage prevention
         if (noFallDamage) {
-            if (event.getEntity() instanceof Player && event.getCause() == EntityDamageEvent.DamageCause.FALL && event.getEntity().getPersistentDataContainer().getOrDefault(bouncedNSK, PersistentDataType.BOOLEAN, false)) {
+            if (event.getEntity() instanceof Player && event.getCause() == EntityDamageEvent.DamageCause.FALL && event.getEntity().getPersistentDataContainer().getOrDefault(bouncedNSK, PersistentDataType.BOOLEAN, false) && event.getEntity().hasPermission("bouncyLeaves.canBounce")) {
                 event.setCancelled(true);
             }
         }
