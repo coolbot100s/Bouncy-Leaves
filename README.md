@@ -1,7 +1,7 @@
 ## Bouncy Leaves  
 
 **Find this project at:**  
-[Modrinth](https://modrinth.com/plugin/bouncy-leaves/), [GitHub](https://github.com/coolbot100s/Bouncy-Leaves), Curseforge, Spigot, Planet Minecraft
+[Modrinth](https://modrinth.com/plugin/bouncy-leaves/), [GitHub](https://github.com/coolbot100s/Bouncy-Leaves), [Curseforge](https://www.curseforge.com/minecraft/bukkit-plugins/bouncy-leaves), Spigot, Planet Minecraft
 
 This Minecraft Spigot plugin turns the Big Dripleaves in your world into launchpads! Highly configurable, great for parkour and minigames, or just making lush caves more exciting.  
 
