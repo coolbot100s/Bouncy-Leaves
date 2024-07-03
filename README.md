@@ -22,5 +22,5 @@ See a quick video showcase at the link below:
 [https://youtu.be/i26XPAi_Oh0](https://youtu.be/i26XPAi_Oh0)
 
 
-## Information and Links
+## Project Links
 [![modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/available/modrinth_vector.svg)](https://modrinth.com/plugin/bouncy-leaves/) [![discord](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/social/discord-singular_vector.svg)](https://discord.gg/qxRVkGDjdJ) [![github](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/available/github_vector.svg)](https://github.com/coolbot100s/Bouncy-Leaves) [![curseforge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/available/curseforge_vector.svg)](https://www.curseforge.com/minecraft/bukkit-plugins/bouncy-leaves) [![spigot](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/supported/spigot_vector.svg)](https://www.spigotmc.org/resources/bouncy-leaves.117769)  [![hangar](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/available/hangar_vector.svg)](https://hangar.papermc.io/coolbot100s) [![planet minecraft](https://github.com/coolbot100s/Bouncy-Leaves/assets/76798835/0b2c0293-c2ab-4956-9055-70bc7d7141c5)](https://www.planetminecraft.com/mod/bouncy-leaves/)
